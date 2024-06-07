@@ -1,0 +1,322 @@
+- getAllByRole is used when we use any texttype
+- getByRole will only called when we have once not 0 or more than once
+
+- textbox is used in getAllByRole when we have no type in input field or type is "text" 
+- When we have to test any clicking or typing in input field then use "user" library
+user.click(element) - Simulates clicking on the provided element
+user.keyboard("asda") - Simulates typing
+user.keyboard('{Enter}) - Simulates pressing the Enter key
+
+- expect(mock).toHaveBeenCalled();  // here toHaveBeenCalled() is known as matcher function
+
+- screen.logTestingPlaygroundURL(); //   this is used to get a link where some of the test cases will be written directly according to your usage 
+- For that link you need to check in terminal.
+- In case of table rows you can not select at a time so for that you might need to apply some styles
+
+- Whenever we need to get a particular element then we can use something known as "data-testid" 
+inside the element.
+Ex: <tbody data-testid="users">{renderedUsers}</tbody>
+Test: const rows = within(screen.getByTestId("users")).getAllByRole("row");
+
+- React Testing Librry don't recomend "beforeEach()" query function in the react test. You can use if you want.
+
+DIFFERENT ROLES SCENARIO EXAMPLES:
+----------------------------------
+- Local Command by the tutor to check all the commands - npx rtl-book serve roles-notes.js 
+Ex1: 
+<div>
+    <a href="/">Link</a>
+    <button>Button</button>
+    <footer>Contentinfo</footer>
+    <h1>Heading</h1>
+    <header>Banner</header>
+    <img alt="description" /> Img
+    <input type="checkbox" />Checkbox
+    <input type="number" />Spinbutton
+    <input type="radio" />Radio
+    <input type="text" />Textbox
+    <li>Listitem</li>
+    <ul>Listgroup</ul>
+</div>
+Test Case:
+----------
+test("can find elements by role", () => {
+  render(<RoleExample />);
+  const roles = [
+    'link',
+    'button',
+    'contentinfo',
+    'heading',
+    'banner',
+    "img",
+    'checkbox',
+    'spinbutton',
+    'radio',
+    'textbox',
+    'listitem',
+    'list'
+  ]
+  for(let role of roles) {
+    const el = screen.getByRole(role);
+    expect(el).toBeInTheDocument();
+  }
+})
+
+Ex2:
+<div>
+    <button>Submit</button>
+    <button>Cancel</button>
+</div>
+Test Case:
+---------
+test("can select by accessible name", () => {
+  render(<AccessibleName />)
+  const submitButton = screen.getByRole("button", {     // as we have two button so specifically we need write submit name(It is also called as "Accessible Name" which content is inside an element)
+    name: /submit/i
+  })
+  const cancelButton = screen.getByRole("button", {
+    name: /cancel/i
+  })
+  expect(submitButton).toBeInTheDocument();
+  expect(cancelButton).toBeInTheDocument();
+})
+
+Ex3:
+<div>
+    <label htmlFor="email">Email</label>
+    <input id="email" />
+    <label htmlFor="search">Search</label>
+    <input id="search" />
+</div>
+Test Case:
+---------
+test("shows an email and search input", () => {
+  render(<MoreNames />);
+  const emailInput = screen.getByRole("textbox", {
+    name: /email/i
+  })
+  const searchInput = screen.getByRole("textbox", {
+    name: /search/i
+  })
+  expect(emailInput).toBeInTheDocument();
+  expect(searchInput).toBeInTheDocument();
+})
+
+Ex4:
+<div>
+    <button aria-label="sign in">
+    <svg />
+    </button>
+    <button aria-label="sign out">
+    <svg />
+    </button>
+</div>
+Test Case:
+---------
+test("find elements based on labels", () => {
+  render(<IconButtons />);
+  const signInButton = screen.getByRole("button", {
+    name: /sign in/i
+  })
+  const signOutButton = screen.getByRole("button", {
+    name: /sign out/i
+  })
+  expect(signInButton).toBeInTheDocument();
+  expect(signOutButton).toBeInTheDocument();
+})
+
+QUERY FUNCTIONS:
+----------------
+- npx rtl-book serve query-notes.js
+- getByRole - It will search for one element if it will get 0 or more than 1 than will get error
+- queryBy() - Any function is starts with "queryBy" is going to return null.
+- findByRole() - It works asunchronously. It some kind of return promise it will wait 1 second to check either it is true or false.
+
+Ex: 
+<ul>  ------ list
+  <li>Red</li> -----listitem
+  <li>Blue</li>
+  <li>Green</li>
+</ul>
+Test Case:
+----------
+test("getBy, queryBy, findBy finding 0 elements", async () => {
+  render(<ColorList />)
+  expect(() => screen.getByRole("textbox")).toThrow();
+  expect(screen.queryByRole("textbox")).toEqual(null);
+  let errorThrown = false;
+  try {
+  await screen.findByRole("textbox")
+  } catch(err) {
+    errorThrown = true;
+  }
+  expect(errorThrown).toEqual(true)
+})
+
+test("getBy, queryBy, findBy when they find 0 element", async () => {
+  render(<ColorList />)
+  expect(screen.getByRole("list")).toBeInTheDocument()
+  expect(screen.queryByRole("list")).toBeInTheDocument();
+  expect(await screen.findByRole("list")).toBeInTheDocument();
+})
+
+test("getBy, queryBy, findBy when finding >1 elements", async () => {
+  render(<ColorList />)
+  expect(() => screen.getByRole("listitem")).toThrow();
+  expect(() => screen.queryByRole("listitem")).toThrow();
+  let errorThrown = false;
+  try {
+  await screen.findByRole("listitem")
+  } catch(err) {
+    errorThrown = true;
+  }
+  expect(errorThrown).toEqual(true)
+})
+
+test("getAllBy, queryAllBy, findAllBy", async () => {
+  render(<ColorList />);
+  expect(screen.getAllByRole("listitem")).toHaveLength(3)
+  expect(screen.queryAllByRole("listitem")).toHaveLength(3)
+  expect(await screen.findAllByRole("listitem")).toHaveLength(3)
+})
+
+- getBy, getAllBy - Prove an element exist
+test("favour using getBy to prove an element exists", () => {
+  render(<ColorList />)
+  const element = screen.getByRole("list");
+  expect(element).toBeInTheDocument();
+})
+
+- queryBy, queryAllBy - Prove an element does not exist
+test("favour queryBy when proving an element does not exist", () => {
+  render(<ColorList />)
+const element = screen.queryByRole("textbox");
+expect(element).not.toBeInTheDocument();
+})
+
+
+- findBy, FindAllBy - Make sure an element eventually exists
+Ex:
+function fakeFetchColors() {
+  return Promise.resolve(['red', 'green', 'blue'])
+}
+function LoadableColorList() {
+  const [colors, setColors] = useState([])
+  useEffect(() => {
+    fakeFetchColors().then(c => setColors(c))
+  }, [])
+
+  const renderedColors = colors.map(color => (
+    <li key={color}>{color}</li>
+  ))
+
+  return (
+    <ul>{renderedColors}</ul>
+  )
+}
+render(<LoadableColorList />)
+
+Test Case:
+---------
+test("favor findBy or FindByAll when data fetching", async () => {
+  render(<LoadableColorList />)
+  const els = await screen.findAllByRole('listitem');
+  expect(els).toHaveLength(3)
+})
+
+QUERY FUNCTION SUFFIXES
+-----------------------
+- npx rtl-book serve criteria-notes.js
+- getByRole, getByText, getByLabelText, etc., these are known as QUERY FUNCTION SUFFIX.
+Ex:
+function DataForm() {
+  const [email, setEmail] = useState('gopal@gmail.com');
+  return (
+    <form>
+      <h3>Enter Data</h3>
+      <div data-testid="image wrapper">
+        <img alt="data" src="data.jpg" />
+        <label htmlFor="email">Email</label>
+        <input
+          id="email"
+          value={email}
+          onchange={(e) => setEmail(e.target.value)}
+        />
+        <label htmlFor="color">Color</label>
+        <input
+          id="color"
+          placeholder="Red"
+        />
+        <button title="click when ready to submit">Submit</button>
+      </div>
+    </form>
+  );
+}
+
+Test Case:
+----------
+test("selecting different elements", () => {
+render(<DataForm />)
+const elements = [
+  screen.getByRole("button"),
+  // screen.getByText("Enter Data"),  OR
+  // screen.getByText(/enter data/i), OR
+  screen.getByText(/enter/i),
+
+  // screen.getByLabelText("Email"),  OR
+  screen.getByLabelText(/email/i),
+  screen.getByPlaceholderText("Red"),
+  screen.getByDisplayValue("gopal@gmail.com"),
+  screen.getByAltText("data"),
+  // screen.getByTitle("click when ready to submit"), OR
+  screen.getByTitle(/ready to submit/i),
+  screen.getByTestId("image wrapper")
+  
+]
+  for(let element of elements) {
+    expect(element).toBeInTheDocument()
+  }
+})
+
+MATCHERS:
+---------
+- npx rtl-book serve matcher-notes.js
+- within is a matcher
+
+Ex:
+<div>
+  <button>Go Back</button>
+  <form aria-label="form">
+    <button>Save</button>
+    <button>Cancel</button>
+  </form>
+</div>
+
+Custom Matcher:
+-------------
+function  toContainRole(container, role, quantity = 1) {
+  
+  const elements = within(container).queryAllByRole(role);
+  if(elements.length === quantity) {
+    return {
+      pass: true
+    }
+  }
+
+  return {
+    pass: false,
+    message: () => `Expected to find ${quantity} ${role} elements. Found ${elements.length} instead.`
+  }
+}
+
+expect.extend({toContainRole})
+
+Test Case:
+---------
+test('the form displays two buttons', () => {
+  render(<FormData />);
+  const form = screen.getByRole('form')
+  // const buttons = within(form).getAllByRole('button');   // These are from jest
+  // expect(buttons).toHaveLength(2);
+  expect(form).toContainRole('button', 2)                   // toContainRole() is a custom matcher
+});
