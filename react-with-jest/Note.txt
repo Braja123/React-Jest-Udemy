@@ -320,3 +320,31 @@ test('the form displays two buttons', () => {
   // expect(buttons).toHaveLength(2);
   expect(form).toContainRole('button', 2)                   // toContainRole() is a custom matcher
 });
+
+
+beforeAll - These are global variables so no need to import them.
+
+- If something is not available in the test cases then we should write like below. 
+Ex:
+const signedOutButton = screen.queryByRole('link', {
+  name: /sign out/i
+})
+expect(signedOutButton).not.toBeInTheDocument();
+
+- MemoryRouter is used when we have "Link" element in the component.
+Ex:
+import { MemoryRouter } from "react-router"; 
+render(
+    <MemoryRouter>
+      <AuthButtons />
+    </MemoryRouter>
+  );
+
+- describe() is used to wrap some tests inside this and also easy to debug.
+Ex:
+describe("when user is signed in", () => {
+  test("signin and sign out are not visible", () => {})
+  test("sign out is visible", () => {})
+})
+
+- "describe.only()" or "test.only()" used to limit the number of tests executed.
